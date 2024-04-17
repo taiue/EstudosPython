@@ -1,46 +1,30 @@
-from flask import Flask, request, jsonify
-import requests
-import json
-from flask_cors import CORS
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import email.message
 
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/enviar_email', methods=['POST'])
 def enviar_email():
-    data = request.get_json()
 
-    email_remetente = data['potatoe885@gmail.com']
-    senha_remetente = data['Potatoe@123']
+    email_remetente = 'potatoe885@gmail.com'
+    senha = '8726 4623'
+    email_destinatario = 'taime885@gmail.com'
+    assunto = 'teste'
+    corpo_email = """ 
+    <p> Paragrafo1 </p>
+    <p> Paragrafo2 </p>
+      """
+#construão smtp e corpo email
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(email_remetente, senha)
 
-    email_destinatario = data['taime885@gmail.com']
-    assunto = data['teste']
-    mensagem = data['teste']
+    msg = email.message.Message()
+    msg['Subbject'] = assunto
+    msg['From'] = email_remetente
+    msg['To'] = email_destinatario
+    msg.add_header('Content_Type', 'text/html')
+    msg.set_payload(corpo_email)
 
-    try:
-        # Configurar servidor SMTP
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(email_remetente, senha_remetente)
-
-        # Construir o email
-        msg = MIMEMultipart()
-        msg['De'] = email_remetente
-        msg['Para'] = email_destinatario
-        msg['Assunto'] = assunto
-        msg.attach(MIMEText(mensagem, 'plain'))
-
-        # Enviar email
-        server.sendmail(email_remetente, email_destinatario, msg.as_string())
-        server.quit()
-
-        return jsonify({'message': 'Email enviado com sucesso!'}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    s = smtplib.SMTP('smtp.gmail.com: 587')
+    s.starttls()
+    s.login(msg['From'], senha)
+    s.sendmail(msg['From'], msg.as_string().encode('utf-8'))
+    print('email enviado')
